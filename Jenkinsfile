@@ -22,7 +22,7 @@ pipeline {
         }
         stage('push image') {
             steps{
-                sh 'docker push intjborj/itasset:$BUILD_NUMBER'
+                sh 'docker push intjborj/itasset:latest'
             }
         }
 }
