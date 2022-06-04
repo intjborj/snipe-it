@@ -7,18 +7,18 @@ services:
       dockerfile: Dockerfile.alpine
     container_name: snipeit
     ports:
-    - "8000:80"
+    - "8111:80"
     volumes:
     - ./logs:/var/www/html/storage/logs
     depends_on:
-    - mariadb
+    - snipedb
     - redis
     env_file:
     - .env.docker
     networks:
     - snipeit-backend
 
-  mariadb:
+  snipedb:
     image: mariadb:10.6.4-focal
     volumes:
     - db:/var/lib/mysql
