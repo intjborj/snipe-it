@@ -1,36 +1,34 @@
-node {
-    def app
-
-    stage('Clone repository') {
-        /* Cloning the Repository to our Workspace */
-
-        checkout scm
+pipeline {
+    agent any 
+    environment {
+    DOCKERHUB_CREDENTIALS = credentials('docker-hub')
     }
-
-    stage('Build image') {
-        /* This builds the actual image */
-
-        app = docker.build("intjborj/itasset")
-    }
-	
-	
-
-    stage('Test image') {
-        
-        app.inside {
-            echo "Tests passed"
+    stages { 
+        stage('SCM Checkout') {
+            steps{
+            git 'https://github.com/intjborj/snipe-it.git'
+            }
         }
-    }
-	
-	
-    stage('Push image') {
-        /* 
-			You would need to first register with DockerHub before you can push images to your account
-		*/
-        docker.withRegistry('https://registry.hub.docker.com', 'docker-hub') {
-            app.push("${env.BUILD_NUMBER}")
-            app.push("latest")
-            } 
-                echo "Trying to Push Docker Build to DockerHub"
+
+        stage('Build docker image') {
+            steps {  
+                sh 'docker-compose up -d'
+            }
+        }
+        stage('login to dockerhub') {
+            steps{
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+        stage('push image') {
+            steps{
+                sh 'docker push intjborj/itasset:$BUILD_NUMBER'
+            }
+        }
+}
+post {
+        always {
+            sh 'docker logout'
+        }
     }
 }
